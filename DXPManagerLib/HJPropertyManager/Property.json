@@ -1,0 +1,64 @@
+{
+    "global": {
+           "product": "cx",
+           "dateFormat": "yyyy-MM-dd HH:mm:ss",
+           "relType": "E",
+           "isServiceNbrInputBroken": true,
+           "serviceNbrBreakRule": "3,3,3",
+           "canScanVcPin": false,
+           "appCode":"gaiaCx"
+       },
+    "login": {
+        "loginType": [
+            "pwdLogin",
+            "otpLogin"
+        ],
+        "loginCombination": [
+            "pwdCaptcha",
+            "otp"
+        ],
+        "oauthLoginType": [
+            "facebook",
+            "apple",
+            "google"
+        ],
+        "accountType": "none",
+        "canOauthLogin": true,
+        "canRegister": true,
+        "canViewPwd": true,
+        "canForgotPwd": true
+    },
+    "forgotPwd": {
+        "accountType": "none",
+        "canViewPwd": true
+    },
+    "appNavigationBar": {
+        "btnList": [
+            "message"
+        ],
+        "showSideBar": true
+    },
+    "vcRecharge": {
+        "canRechargeForOthers": true
+    },
+    "webNavigationBar": {
+        "btnList": [
+            "message",
+            "me"
+        ],
+        "showModPwd": true
+    },
+    "recharge":{
+        "canRechargeForOthers":true,
+        "showCustom":true
+    },
+    "loanBalance":{
+        "showUnpaidLoan":false,
+    },
+    "balanceTransfer":{
+        "showCustom":false,
+    },
+    "changePwd":{
+        "canViewPwd":true
+    },
+}
