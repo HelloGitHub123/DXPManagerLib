@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setViewBackgroundColorWithToken:(NSString *)token view:(UIView *)view size:(CGSize)size;
 
-- (void)setViewRadiusWithToken:(NSString *)token view:(UIView *)view;
+- (void)setViewRadiusWithToken:(NSString *)token view:(UIView *)view borderColor:(UIColor *)borderColor borderWidth:(CGFloat )borderWidth;
 @end
 
 NS_ASSUME_NONNULL_END

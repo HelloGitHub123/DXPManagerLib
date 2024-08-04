@@ -57,7 +57,7 @@ static HJTokenManager *tokenManager = nil;
 //    "bottomRight":"24",
 //
 //},
-- (void)setViewRadiusWithToken:(NSString *)token view:(UIView *)view {
+- (void)setViewRadiusWithToken:(NSString *)token view:(UIView *)view borderColor:(UIColor *)borderColor borderWidth:(CGFloat )borderWidth {
 	id cornerRadius = self.tokenDic[token];
 	if([cornerRadius isKindOfClass:[NSDictionary class]]){
 		CGFloat maxY = CGRectGetMaxY(view.bounds);
@@ -67,17 +67,24 @@ static HJTokenManager *tokenManager = nil;
 		CGFloat bottomLeft = [[cornerRadius objectForKey:@"bottomLeft"] floatValue]>maxY/2?maxY/2:[[cornerRadius objectForKey:@"bottomLeft"] floatValue];;
 		CGFloat bottomRight = [[cornerRadius objectForKey:@"bottomRight"] floatValue]>maxY/2?maxY/2:[[cornerRadius objectForKey:@"bottomRight"] floatValue];;
 		
-		[self setCornerRadiusWithTopLeft:topLeft topRight:topRight bottomLeft:bottomLeft bottomRight:bottomRight bounds:view.bounds view:view];
+		[self setCornerRadiusWithTopLeft:topLeft topRight:topRight bottomLeft:bottomLeft bottomRight:bottomRight bounds:view.bounds view:view borderColor:borderColor borderWidth:borderWidth];
 		
 	}else{
 		UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:view.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(24,24)];
 		CAShapeLayer *maskLayer = [CAShapeLayer layer];
 		maskLayer.path = maskPath.CGPath;
 		view.layer.mask = maskLayer;
+		
+		CAShapeLayer *borderLayer = [CAShapeLayer layer];
+		borderLayer.path = maskPath.CGPath;
+		borderLayer.fillColor = [UIColor clearColor].CGColor;
+		borderLayer.strokeColor = [UIColor colorWithRed:0.835 green:0.835 blue:0.835 alpha:1].CGColor;
+		borderLayer.lineWidth = 1;
+		[view.layer addSublayer:borderLayer];
 	}
 }
 
-- (void)setCornerRadiusWithTopLeft:(CGFloat)topLeft topRight:(CGFloat)topRight bottomLeft:(CGFloat)bottomLeft bottomRight:(CGFloat)bottomRight bounds:(CGRect)bounds view:(UIView *)view {
+- (void)setCornerRadiusWithTopLeft:(CGFloat)topLeft topRight:(CGFloat)topRight bottomLeft:(CGFloat)bottomLeft bottomRight:(CGFloat)bottomRight bounds:(CGRect)bounds view:(UIView *)view borderColor:(UIColor *)borderColor borderWidth:(CGFloat )borderWidth {
 
 	CGFloat minX = CGRectGetMinX(bounds);
 	CGFloat minY = CGRectGetMinY(bounds);
@@ -90,15 +97,33 @@ static HJTokenManager *tokenManager = nil;
 	CGFloat bottomLeftCenterX = minX + bottomLeft;
 	CGFloat bottomLeftCenterY = maxY - bottomLeft;
 	CGFloat bottomRightCenterX = maxX - bottomRight;
-	CGFloat bottomRightCenterY = maxY - bottomRight;UIBezierPath *path = [UIBezierPath bezierPath];
+	CGFloat bottomRightCenterY = maxY - bottomRight;
+	
+	UIBezierPath *path = [UIBezierPath bezierPath];
 	[path addArcWithCenter:CGPointMake(topLeftCenterX, topLeftCenterY) radius:topLeft startAngle:M_PI endAngle:3 * M_PI / 2.0 clockwise:YES];
 	[path addArcWithCenter:CGPointMake(topRightCenterX, topRightCenterY) radius:topRight startAngle:3*M_PI/2.0 endAngle:0 clockwise:YES];
 	[path addArcWithCenter:CGPointMake(bottomRightCenterX, bottomRightCenterY) radius:bottomRight startAngle:0 endAngle:M_PI_2 clockwise:YES];
 	[path addArcWithCenter:CGPointMake(bottomLeftCenterX, bottomLeftCenterY) radius:bottomLeft startAngle:M_PI_2 endAngle:M_PI clockwise:YES];
-	CAShapeLayer *masklayer = [[CAShapeLayer alloc]init];
-	masklayer.frame= bounds;
-	masklayer.path= path.CGPath;
-	view.layer.mask= masklayer;
+	[path closePath]; // 确保路径闭合
+	
+//    CAShapeLayer *masklayer = [[CAShapeLayer alloc]init];
+//    masklayer.frame= bounds;
+//    masklayer.path= path.CGPath;
+//    view.layer.mask= masklayer;
+	
+	 
+	CAShapeLayer *maskLayer = [CAShapeLayer layer];
+	maskLayer.frame= bounds;
+	maskLayer.path = path.CGPath;
+	view.layer.mask = maskLayer;
+	
+	CAShapeLayer *borderLayer = [CAShapeLayer layer];
+	borderLayer.path = path.CGPath;
+	borderLayer.fillColor = [UIColor clearColor].CGColor;
+	borderLayer.strokeColor = borderColor.CGColor; // 可以调整为需要的颜色
+	borderLayer.lineWidth = borderWidth; // 可以调整为需要的宽度
+	[view.layer addSublayer:borderLayer];
+
 }
 
 #pragma mark - 获取颜色
