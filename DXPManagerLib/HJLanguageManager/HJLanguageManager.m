@@ -46,6 +46,12 @@ static HJLanguageManager *languageManager = nil;
     return self;
 }
 
+- (NSDictionary *)getAllLangDic {
+	NSString *path = [[NSBundle mainBundle] pathForResource:@"Language" ofType:@"json"];
+	NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil];
+	return dic;
+}
+
 - (NSString *)getTextByKey:(NSString *)key {
     NSString *defaultLanguage = NSUSER_DEF_mg(@"cx_language");
     if (isEmptyString_mg(defaultLanguage)) defaultLanguage = @"en";
