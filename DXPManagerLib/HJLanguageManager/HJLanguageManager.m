@@ -81,7 +81,7 @@ static HJLanguageManager *languageManager = nil;
 - (void)queryLanguageFile:(NSString *)appCode {
     [[DCNetAPIClient sharedClient] GET:[NSString stringWithFormat:kLanguageUrl, appCode] paramaters:@{} CompleteBlock:^(id res, NSError *error) {
         if (res && [res isKindOfClass:[NSDictionary class]]) {
-            NSMutableDictionary *endDic = [[NSMutableDictionary alloc] init];
+			NSMutableDictionary *endDic = [self.langDic mutableCopy]; //[[NSMutableDictionary alloc] init];
             NSArray *dictKeysArr = [res allKeys];
             for (int i = 0; i< dictKeysArr.count; i++) {
                 NSString *key = dictKeysArr[i];
