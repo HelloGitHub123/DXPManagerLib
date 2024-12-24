@@ -97,4 +97,39 @@ static HJImageManager *imageManager = nil;
 	return [UIImage svgImageNamed:name tintColor:svgColor];
 }
 
+// 获取svg 图片
+- (UIImage *)getSVGImageByName:(NSString *)name tintColor:(NSString *)colorStr {
+	NSString *desiredColorHex = colorStr;
+	if (!desiredColorHex || desiredColorHex.length == 0) {
+		// 默认svg颜色
+		desiredColorHex = @"FF5E00";
+	}
+#if __has_include(<DXPPageBuilderLib/DCPageBuildingViewController.h>)
+	// 获取资源包的路径
+	NSBundle *bundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"DXPPageBuilderLib" ofType:@"bundle"]];
+	// 加载 SVG 文件
+	NSString *svgFilePath = [bundle pathForResource:name ofType:@"svg"];
+	if (svgFilePath) {
+		NSError *error = nil;
+		NSString *svgContent = [NSString stringWithContentsOfFile:svgFilePath encoding:NSUTF8StringEncoding error:&error];
+		if (error) {
+			NSLog(@"Log:=== Error reading SVG file: %@", error.localizedDescription);
+		} else {
+			// 替换填充颜色
+			svgContent = [svgContent stringByReplacingOccurrencesOfString:@"fill=\"FF5E00\"" withString:[NSString stringWithFormat:@"fill=\"%@\"", desiredColorHex]];
+			
+			// 将修改后的内容写入临时文件
+			NSString *tempFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"temp.svg"];
+			[svgContent writeToFile:tempFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+			
+			// 重新加载 SVG 内容
+			SVGKImage *svgImage = [SVGKImage imageWithContentsOfFile:tempFilePath];
+			return svgImage.UIImage;
+		}
+	}
+#endif
+	UIColor *svgColor = [UIColor colorWithHexString:desiredColorHex];
+	return [UIImage svgImageNamed:name tintColor:svgColor];
+}
+
 @end
