@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "DXPManagerLib"
-  spec.version      = "1.0.6"
+  spec.version      = "1.0.7"
   spec.summary      = "DXP Manager."
 
   # This description is used to generate tags and improve search results.
@@ -124,6 +124,8 @@ Pod::Spec.new do |spec|
     spec.dependency 'YYModel'
     spec.dependency 'YYCache'
     spec.dependency 'SSZipArchive'
+    spec.dependency 'DXPCategoryLib'
+    spec.dependency 'SVGKit'
 
   # spec.library   = "iconv"
   # spec.libraries = "iconv", "xml2"
