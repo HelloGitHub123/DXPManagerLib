@@ -27,9 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 // 获取svg 图片
 - (UIImage *)getSVGImageByName:(NSString *)name tintColor:(NSString *)colorStr;
 
-// 获取svg 图片
-- (UIImage *)getSVGImageByName:(NSString *)name tintColor:(NSString *)colorStr;
-
 @end
 
 NS_ASSUME_NONNULL_END
