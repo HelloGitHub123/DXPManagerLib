@@ -7,7 +7,7 @@
 
 #import "HJImageManager.h"
 #import <YYCache/YYCache.h>
-#import <DXPNetWorkingManagerLib/DCNetAPIClient.h>
+//#import <DXPNetWorkingManagerLib/DCNetAPIClient.h>
 #import "ManagerHeader.h"
 
 static HJImageManager *imageManager = nil;
@@ -48,6 +48,14 @@ static HJImageManager *imageManager = nil;
             if (image) return image;
         }
     }
+#if __has_include(<DXPPageBuilderLib/DCPageBuildingViewController.h>)
+	// 获取库的 bundle
+	NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"DXPPageBuilderLib" ofType:@"bundle"];
+	NSBundle *libraryBundle = [NSBundle bundleWithPath:bundlePath];
+	// 从 bundle 中加载图片
+	UIImage *image = [UIImage imageNamed:name inBundle:libraryBundle compatibleWithTraitCollection:nil];
+	return image;
+#endif
     return [UIImage imageNamed:name];
 }
 
