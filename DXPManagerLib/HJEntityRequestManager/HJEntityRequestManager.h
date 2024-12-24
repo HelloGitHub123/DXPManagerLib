@@ -22,6 +22,9 @@ typedef void(^EntityBlock)(NSArray *retrunArray);
 @property (nonatomic, strong) NSString *ID;
 @property (nonatomic, strong) NSString *NAME;
 @property (nonatomic, strong) NSString *rowId;
+
+@property (nonatomic, strong) NSString *ICON;
+@property (nonatomic, strong) NSString *URL;
 @end
 
 
