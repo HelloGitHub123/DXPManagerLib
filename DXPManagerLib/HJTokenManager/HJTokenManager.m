@@ -38,14 +38,28 @@ static HJTokenManager *tokenManager = nil;
     if (self) {
         self.tokenKey = [NSString stringWithFormat:@"color_%@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]];
         YYCache *cache = [[YYCache alloc] initWithName:@"APP_CACHE"];
-        BOOL isContains = [cache containsObjectForKey:self.tokenKey];
-        if (isContains) {
-            self.tokenDic = (NSDictionary *)[cache objectForKey:self.tokenKey];
-        } else {
-            NSString *path = [[NSBundle mainBundle] pathForResource:@"Token" ofType:@"json"];
-            self.tokenDic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil];
-            [cache setObject:self.tokenDic forKey:self.tokenKey];
-        }
+		BOOL isContains = [cache containsObjectForKey:self.tokenKey];
+		if (isContains) {
+			NSMutableDictionary *darkAndLightTokenDic = (NSMutableDictionary *)[cache objectForKey:self.tokenKey];
+			_tokenDic = [darkAndLightTokenDic objectForKey:@"light"];
+			_darkTokenDic = [darkAndLightTokenDic objectForKey:@"dark"];
+		} else {
+			NSMutableDictionary *darkAndLightTokenDic = [[NSMutableDictionary alloc]initWithCapacity:2];
+			
+			NSString *path = [[NSBundle mainBundle] pathForResource:@"Token" ofType:@"json"];
+			_tokenDic = path ? [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil] : @{};
+			
+			NSString *darkTokenPath = [[NSBundle mainBundle] pathForResource:@"DarkToken" ofType:@"json"];
+			_darkTokenDic = darkTokenPath ? [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:darkTokenPath] options:0 error:nil] : @{};
+			
+			[darkAndLightTokenDic setObject:_tokenDic forKey:@"light"];
+			[darkAndLightTokenDic setObject:_darkTokenDic forKey:@"dark"];
+			[cache setObject:darkAndLightTokenDic forKey:self.tokenKey];
+		}
+		// 暗黑相关配置
+		self.darkModeUserDefaultsKey = @"cx_dark_mode";
+		self.darkModeUserDefaultsDarkValue = @"dark";
+		self.darkModeUserDefaultsLightValue = @"light";
     }
     return self;
 }
@@ -128,7 +142,26 @@ static HJTokenManager *tokenManager = nil;
 
 #pragma mark - 获取颜色
 - (UIColor *)getColorByToken:(NSString *)token {
-    return [[self colorWithHex:self.tokenDic[token]] colorWithAlphaComponent:1];
+	if (!self.supportDarkMode) {
+		// 不支持暗黑
+		return [[self colorWithHex:self.tokenDic[token]] colorWithAlphaComponent:1];
+	}
+	if (@available(iOS 13.0, *)) {
+		return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
+			if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+				if ([self.darkTokenDic objectForKey:token]) {
+					return [self getColorByTokenValue:self.darkTokenDic[token]];
+				} else {
+					return [self getColorByTokenValue:self.tokenDic[token]];
+				}
+			} else {
+				return [self getColorByTokenValue:self.tokenDic[token]];
+			}
+		}];
+	} else {
+		// Fallback on earlier versions
+		return [[self colorWithHex:self.tokenDic[token]] colorWithAlphaComponent:1];
+	}
 }
 
 - (id)getColorDictByToken:(NSString *)token {
@@ -161,9 +194,9 @@ static HJTokenManager *tokenManager = nil;
     NSString *colorStr = [[hexColor stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
     
     // String should be 6 or 8 characters
-    if ([colorStr length] < 6 || [colorStr length] > 7) {
-        return [UIColor clearColor];
-    }
+	if ([colorStr length] != 7 && [colorStr length] != 9) {
+		return [UIColor clearColor];
+	}
     
     //
     if ([colorStr hasPrefix:@"#"]) {
@@ -189,13 +222,54 @@ static HJTokenManager *tokenManager = nil;
     [[NSScanner scannerWithString:redString] scanHexInt:&red];
     [[NSScanner scannerWithString:greenString] scanHexInt:&green];
     [[NSScanner scannerWithString:blueString] scanHexInt:&blue];
+	
+	//alpha
+	if (colorStr.length > 6) {
+		range.location = 6;
+		NSString *alphaString = [colorStr substringWithRange:range];
+		unsigned int alpha;
+		[[NSScanner scannerWithString:alphaString] scanHexInt:&alpha];
+		return [UIColor colorWithRed:((float)red/ 255.0f) green:((float)green/ 255.0f) blue:((float)blue/ 255.0f) alpha:alpha/255.0f];
+	}
     
     return [UIColor colorWithRed:((float)red/ 255.0f) green:((float)green/ 255.0f) blue:((float)blue/ 255.0f) alpha:1];
+}
+
+- (UIColor *)dynamicColorWithLightColor:(UIColor *)lightColor darkColor:(UIColor *)darkColor {
+	if (!self.supportDarkMode) {
+		// 不支持暗黑
+		return lightColor;
+	}
+	if (@available(iOS 13.0, *)) {
+		return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
+			if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+				return darkColor;
+			} else {
+				return lightColor;
+			}
+		}];
+	} else {
+		// Fallback on earlier versions
+		return lightColor;
+	}
 }
 
 #pragma mark - 获取值
 - (NSString *)getValueByToken:(NSString *)token {
     return self.tokenDic[token];
+}
+
+- (UIColor *)getColorByTokenValue:(id)tokenValue {
+	if ([tokenValue isKindOfClass:[NSString class]]) {
+		NSString *valueStr = (NSString *)tokenValue;
+		if ([tokenValue isEqualToString:@"transparent"]) {
+			return [UIColor clearColor];
+		} else {
+			return [self colorWithHex:valueStr];
+		}
+	} else {
+		return [UIColor clearColor];
+	}
 }
 
 #pragma mark - 更新Token
@@ -208,9 +282,32 @@ static HJTokenManager *tokenManager = nil;
     NSMutableDictionary *localDic = [self.tokenDic mutableCopy];
     NSMutableDictionary *newDic = [dic mutableCopy];
     [localDic addEntriesFromDictionary:newDic];
-    self.tokenDic = localDic;
-    YYCache *cache = [[YYCache alloc] initWithName:@"APP_CACHE"];
-    [cache setObject:self.tokenDic forKey:self.tokenKey];
+	_tokenDic = localDic;
+	YYCache *cache = [[YYCache alloc] initWithName:@"APP_CACHE"];
+	NSMutableDictionary *darkAndLightTokenDic = (NSMutableDictionary *)[cache objectForKey:self.tokenKey];
+	[darkAndLightTokenDic setObject:self.tokenDic forKey:@"light"];
+	[cache setObject:darkAndLightTokenDic forKey:self.tokenKey];
+}
+
+#pragma mark - setter
+- (void)setEnableDarkMode:(BOOL)enableDarkMode {
+	if (enableDarkMode != _enableDarkMode) {
+		_enableDarkMode = enableDarkMode;
+		// 不支持暗黑 直接返回
+		if (!self.supportDarkMode) return;
+		if (@available(iOS 13.0, *)) {
+			if (enableDarkMode) {
+				[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+				[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsDarkValue forKey:self.darkModeUserDefaultsKey];
+			} else {
+				[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
+				[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsLightValue forKey:self.darkModeUserDefaultsKey];
+			}
+		} else {
+			// Fallback on earlier versions
+			[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsLightValue forKey:self.darkModeUserDefaultsKey];
+		}
+	}
 }
 
 @end
