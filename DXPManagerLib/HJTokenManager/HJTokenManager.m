@@ -10,6 +10,7 @@
 #import <DXPNetWorkingManagerLib/DCNetAPIClient.h>
 #import "UIColor+Category_mg.h"
 #import "ManagerHeader.h"
+#import <objc/runtime.h>
 
 #define M_PI        3.14159265358979323846264338327950288  /* pi            */
 
@@ -291,23 +292,104 @@ static HJTokenManager *tokenManager = nil;
 
 #pragma mark - setter
 - (void)setEnableDarkMode:(BOOL)enableDarkMode {
-	if (enableDarkMode != _enableDarkMode) {
-		_enableDarkMode = enableDarkMode;
-		// 不支持暗黑 直接返回
-		if (!self.supportDarkMode) return;
-		if (@available(iOS 13.0, *)) {
-			if (enableDarkMode) {
-				[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-				[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsDarkValue forKey:self.darkModeUserDefaultsKey];
-			} else {
-				[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
-				[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsLightValue forKey:self.darkModeUserDefaultsKey];
-			}
+	_enableDarkMode = enableDarkMode;
+	// 不支持暗黑 直接返回
+	if (!self.supportDarkMode) return;
+	if (@available(iOS 13.0, *)) {
+		if (enableDarkMode) {
+			[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+			[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsDarkValue forKey:self.darkModeUserDefaultsKey];
 		} else {
-			// Fallback on earlier versions
+			[UIApplication sharedApplication].delegate.window.overrideUserInterfaceStyle = UIUserInterfaceStyleLight;
 			[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsLightValue forKey:self.darkModeUserDefaultsKey];
 		}
+	} else {
+		// Fallback on earlier versions
+		[[NSUserDefaults standardUserDefaults] setValue:self.darkModeUserDefaultsLightValue forKey:self.darkModeUserDefaultsKey];
 	}
+}
+
+@end
+
+
+
+@implementation UIView (DarkMode)
+
+static const char *darkModeBlocks = "\0";
+
++ (void)load {
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		[self swizzleInstanceMethodWithCls:self oriSel:@selector(traitCollectionDidChange:) swiSel:@selector(DarkModeTraitCollectionDidChange:)];
+	});
+}
+
+/**
+ @brief 替换类的对象方法
+ @param cls 要修改的类
+ @param originalSelector 要替换的方法
+ @param swizzledSelector 新的方法实现
+ */
++ (void)swizzleInstanceMethodWithCls:(Class)cls oriSel:(SEL)originalSelector swiSel:(SEL)swizzledSelector {
+	if (!cls) {
+		NSLog(@"交换方法失败--请保证交换的类名不为空");
+		return;
+	}
+	
+	if (!originalSelector || !swizzledSelector) {
+		NSLog(@"交换方法失败--请保证交换的方法名不为空");
+		return;
+	}
+	
+	Method originalMethod = class_getInstanceMethod(cls, originalSelector);
+	Method swizzledMethod = class_getInstanceMethod(cls, swizzledSelector);
+	
+	BOOL didAddMethod =
+	class_addMethod(cls,
+					originalSelector,
+					method_getImplementation(swizzledMethod),
+					method_getTypeEncoding(swizzledMethod));
+	
+	if (didAddMethod) {
+		class_replaceMethod(cls,
+							swizzledSelector,
+							method_getImplementation(originalMethod),
+							method_getTypeEncoding(originalMethod));
+	} else {
+		method_exchangeImplementations(originalMethod, swizzledMethod);
+	}
+}
+
+- (void)DarkModeTraitCollectionDidChange:(UITraitCollection *)previousTraitCollection {
+	[self DarkModeTraitCollectionDidChange:previousTraitCollection];
+	// 因为颜色改变触发
+	if (@available(iOS 13.0, *)) {
+		if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+			NSMutableArray *blocks = [self darkModeBlocks];
+			for (DarkModeBlock block in blocks) {
+				block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
+			}
+		}
+	} else {
+		// Fallback on earlier versions
+	}
+}
+
+- (void)addDarkModeBlock:(DarkModeBlock)block {
+	if (block) {
+		block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
+		NSMutableArray *blocks = [self darkModeBlocks];
+		[blocks addObject:block];
+		objc_setAssociatedObject(self, darkModeBlocks, blocks, OBJC_ASSOCIATION_RETAIN);
+	}
+}
+
+- (NSMutableArray *)darkModeBlocks {
+	id blocks = objc_getAssociatedObject(self, darkModeBlocks);
+	if (blocks) {
+		return (NSMutableArray *)blocks;
+	}
+	return [[NSMutableArray alloc]init];
 }
 
 @end

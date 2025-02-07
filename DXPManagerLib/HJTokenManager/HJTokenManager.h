@@ -53,4 +53,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (UIColor *)dynamicColorWithLightColor:(UIColor *)lightColor darkColor:(UIColor *)darkColor;
 @end
 
+
+typedef void(^DarkModeBlock)(BOOL isDark);
+
+@interface UIView (DarkMode)
+
+- (void)addDarkModeBlock:(DarkModeBlock)block;
+
+@end
+
 NS_ASSUME_NONNULL_END
