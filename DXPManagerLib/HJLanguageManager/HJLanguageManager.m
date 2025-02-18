@@ -99,4 +99,22 @@ static HJLanguageManager *languageManager = nil;
     }];
 }
 
+// 更新合并国际化字典
+- (void)mergeLanguagebyDic:(NSDictionary *)langDic {
+	NSMutableDictionary *endDic = [self.langDic mutableCopy];
+	NSArray *dictKeysArr = [langDic allKeys];
+	for (int i = 0; i< dictKeysArr.count; i++) {
+		NSString *key = dictKeysArr[i];
+		NSMutableDictionary *localDic = [[self.langDic objectForKey:key] mutableCopy];
+		NSMutableDictionary *serverDic = [[langDic objectForKey:key] mutableCopy];
+		[serverDic enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+			[localDic setObject:objectOrEmptyStr_mg(obj) forKey:key];
+		}];
+		[endDic setValue:localDic forKey:key];
+	}
+	self.langDic = [NSDictionary dictionaryWithDictionary:endDic];
+	YYCache *cache = [[YYCache alloc] initWithName:@"APP_CACHE"];
+	[cache setObject:self.langDic forKey:self.languageKey];
+}
+
 @end

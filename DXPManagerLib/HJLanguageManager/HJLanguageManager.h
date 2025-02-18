@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)getAllLangDic;
 
+// 更新合并国际化字典
+- (void)mergeLanguagebyDic:(NSDictionary *)langDic;
+
 @end
 
 NS_ASSUME_NONNULL_END
