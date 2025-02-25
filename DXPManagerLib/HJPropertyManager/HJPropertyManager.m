@@ -91,4 +91,8 @@ static HJPropertyManager *propertyManager = nil;
         }
     }
 }
+
+- (void)UpdatePropertyDic:(NSDictionary *)propertyDic {
+	self.propertyDic = propertyDic;
+}
 @end

@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)queryPropertyFile;
 
+- (void)UpdatePropertyDic:(NSDictionary *)propertyDic;
+
 @end
 
 NS_ASSUME_NONNULL_END
