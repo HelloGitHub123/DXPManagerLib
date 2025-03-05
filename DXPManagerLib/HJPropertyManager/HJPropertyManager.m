@@ -39,9 +39,13 @@ static HJPropertyManager *propertyManager = nil;
         if (isContains) {
             self.propertyDic = (NSDictionary *)[cache objectForKey:self.propertyKey];
         } else {
-            NSString *path = [[NSBundle mainBundle] pathForResource:@"Property" ofType:@"json"];
-            self.propertyDic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil];
-            [cache setObject:self.propertyDic forKey:self.propertyKey];
+			NSString *path = [[NSBundle mainBundle] pathForResource:@"Property" ofType:@"json"];
+			if (path) {
+				self.propertyDic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil];
+			} else {
+				self.propertyDic = @{};
+			}
+			[cache setObject:self.propertyDic forKey:self.propertyKey];
         }
     }
     return self;
