@@ -290,6 +290,25 @@ static HJTokenManager *tokenManager = nil;
 	[cache setObject:darkAndLightTokenDic forKey:self.tokenKey];
 }
 
+- (void)updateTokenJsonWithDic:(NSDictionary *)dic cacheData:(BOOL)cacheData {
+    if (dic.count == 0) {
+        NSString *path = [[NSBundle mainBundle] pathForResource:@"Token" ofType:@"json"];
+        dic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:path] options:0 error:nil];
+    }
+    
+    NSMutableDictionary *localDic = [self.tokenDic mutableCopy];
+    NSMutableDictionary *newDic = [dic mutableCopy];
+    [localDic addEntriesFromDictionary:newDic];
+    _tokenDic = localDic;
+    
+    if (cacheData) {
+        YYCache *cache = [[YYCache alloc] initWithName:@"APP_CACHE"];
+        NSMutableDictionary *darkAndLightTokenDic = (NSMutableDictionary *)[cache objectForKey:self.tokenKey];
+        [darkAndLightTokenDic setObject:self.tokenDic forKey:@"light"];
+        [cache setObject:darkAndLightTokenDic forKey:self.tokenKey];
+    }
+}
+
 #pragma mark - setter
 - (void)setEnableDarkMode:(BOOL)enableDarkMode {
 	_enableDarkMode = enableDarkMode;

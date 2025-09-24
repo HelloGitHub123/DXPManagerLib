@@ -40,6 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)getValueByToken:(NSString *)token;
 
 - (void)updateTokenJsonWithDic:(NSDictionary *)dic;
+
+- (void)updateTokenJsonWithDic:(NSDictionary *)dic cacheData:(BOOL)cacheData;
+
 ///判断是否渐变色使用
 - (id)getColorDictByToken:(NSString *)token;
 
