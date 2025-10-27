@@ -145,7 +145,7 @@ static HJTokenManager *tokenManager = nil;
 - (UIColor *)getColorByToken:(NSString *)token {
 	if (!self.supportDarkMode) {
 		// 不支持暗黑
-		return [[self colorWithHex:self.tokenDic[token]] colorWithAlphaComponent:1];
+		return [self colorWithHex:self.tokenDic[token]];
 	}
 	if (@available(iOS 13.0, *)) {
 		return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
@@ -161,7 +161,7 @@ static HJTokenManager *tokenManager = nil;
 		}];
 	} else {
 		// Fallback on earlier versions
-		return [[self colorWithHex:self.tokenDic[token]] colorWithAlphaComponent:1];
+		return [self colorWithHex:self.tokenDic[token]];
 	}
 }
 
