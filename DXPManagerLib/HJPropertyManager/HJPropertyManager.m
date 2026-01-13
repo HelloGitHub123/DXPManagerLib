@@ -45,6 +45,24 @@ static HJPropertyManager *propertyManager = nil;
 			} else {
 				self.propertyDic = @{};
 			}
+			//新增与本地property合并
+			NSString *productPropertyPath = [[NSBundle mainBundle] pathForResource:@"ProductProperty" ofType:@"json"];
+			NSDictionary *productPropertyDic = @{};
+			if (productPropertyPath) {
+				productPropertyDic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:productPropertyPath] options:0 error:nil];
+			}
+			if (productPropertyDic.count > 0) {
+				NSMutableDictionary *resultDict = [self.propertyDic mutableCopy];
+				
+				[productPropertyDic enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+					if (!resultDict[key]) {
+						resultDict[key] = obj;
+					}
+				}];
+				
+				self.propertyDic = [resultDict copy];
+			}
+			//end
 			[cache setObject:self.propertyDic forKey:self.propertyKey];
         }
     }
