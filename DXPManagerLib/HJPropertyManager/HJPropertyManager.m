@@ -52,15 +52,7 @@ static HJPropertyManager *propertyManager = nil;
 				productPropertyDic = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:productPropertyPath] options:0 error:nil];
 			}
 			if (productPropertyDic.count > 0) {
-				NSMutableDictionary *resultDict = [self.propertyDic mutableCopy];
-				
-				[productPropertyDic enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-					if (!resultDict[key]) {
-						resultDict[key] = obj;
-					}
-				}];
-				
-				self.propertyDic = [resultDict copy];
+                self.propertyDic = [self deepMergeDictionary:self.propertyDic withDictionary:productPropertyDic];;
 			}
 			//end
 			[cache setObject:self.propertyDic forKey:self.propertyKey];
@@ -68,6 +60,30 @@ static HJPropertyManager *propertyManager = nil;
     }
     return self;
 }
+
+//新增与本地property合并
+- (NSDictionary *)deepMergeDictionary:(NSDictionary *)primaryDict
+                       withDictionary:(NSDictionary *)secondaryDict {
+    NSMutableDictionary *result = [primaryDict mutableCopy];
+    
+    [secondaryDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        // 如果primaryDict中不存在该key，直接添加
+        if (!result[key]) {
+            result[key] = obj;
+        }
+        // 如果primaryDict中存在该key，且两个值都是字典，则递归合并
+        else if ([result[key] isKindOfClass:[NSDictionary class]] &&
+                 [obj isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *mergedSubDict = [self deepMergeDictionary:result[key]
+                                                     withDictionary:obj];
+            result[key] = mergedSubDict;
+        }
+        // 其他情况（非字典或类型不匹配），保持primaryDict的值（不覆盖）
+    }];
+    
+    return [result copy];
+}
+//end
 
 - (NSDictionary *)getProperyJson {
     return self.propertyDic;
