@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 // 暗黑模式的颜色 写死颜色的时候用到
 - (UIColor *)dynamicColorWithLightColor:(UIColor *)lightColor darkColor:(UIColor *)darkColor;
+
+// 取不到token对应的颜色的时候的兜底颜色
+- (UIColor *)getColorByToken:(NSString *)token escapeColor:(UIColor *)escapeColor escapeDarkColor:(UIColor *)escapeDarkColor;
+
 @end
 
 

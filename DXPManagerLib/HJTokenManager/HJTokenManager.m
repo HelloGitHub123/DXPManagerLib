@@ -255,6 +255,41 @@ static HJTokenManager *tokenManager = nil;
 	}
 }
 
+- (UIColor *)getColorByToken:(NSString *)token escapeColor:(UIColor *)escapeColor escapeDarkColor:(UIColor *)escapeDarkColor {
+    if (!self.supportDarkMode) {
+        // 不支持暗黑
+        NSString *tokenColorValue = self.tokenDic[token];
+        if (isEmptyString_mg(tokenColorValue)) {
+            return escapeColor ?: UIColor.clearColor;
+        }
+        return [self colorWithHex:self.tokenDic[token]];
+    }
+    if (@available(iOS 13.0, *)) {
+        return [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
+            if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+                if (!isEmptyString_mg([self.darkTokenDic objectForKey:token])) {
+                    return [self getColorByTokenValue:self.darkTokenDic[token]];
+                } else {
+                    return escapeDarkColor ?: UIColor.clearColor;
+                }
+            } else {
+                NSString *tokenColorValue = self.tokenDic[token];
+                if (isEmptyString_mg(tokenColorValue)) {
+                    return escapeColor ?: UIColor.clearColor;
+                }
+                return [self colorWithHex:self.tokenDic[token]];
+            }
+        }];
+    } else {
+        // Fallback on earlier versions
+        NSString *tokenColorValue = self.tokenDic[token];
+        if (isEmptyString_mg(tokenColorValue)) {
+            return escapeColor ?: UIColor.clearColor;
+        }
+        return [self colorWithHex:self.tokenDic[token]];
+    }
+}
+
 #pragma mark - 获取值
 - (NSString *)getValueByToken:(NSString *)token {
     return self.tokenDic[token];
