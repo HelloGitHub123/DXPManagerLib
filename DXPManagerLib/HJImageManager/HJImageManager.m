@@ -56,7 +56,7 @@ static HJImageManager *imageManager = nil;
 	NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"DXPPageBuilderLib" ofType:@"bundle"];
 	NSBundle *libraryBundle = [NSBundle bundleWithPath:bundlePath];
 	// 从 bundle 中加载图片
-	UIImage *image = [UIImage imageNamed:name inBundle:libraryBundle compatibleWithTraitCollection:nil];
+	UIImage *image = [UIImage imageNamed:name inBundle:libraryBundle compatibleWithTraitCollection:[UITraitCollection traitCollectionWithTraitsFromCollections:@[UIApplication.sharedApplication.delegate.window.traitCollection]]];
 	return image;
 #endif
     return [UIImage imageNamed:name];

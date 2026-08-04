@@ -418,7 +418,7 @@ static const char *darkModeBlocks = "\0";
 	[self DarkModeTraitCollectionDidChange:previousTraitCollection];
 	// 因为颜色改变触发
 	if (@available(iOS 13.0, *)) {
-		if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+		if (HJTokenManager.shareInstance.supportDarkMode && [self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
 			NSMutableArray *blocks = [self darkModeBlocks];
 			for (DarkModeBlock block in blocks) {
 				block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
@@ -431,7 +431,7 @@ static const char *darkModeBlocks = "\0";
 
 - (void)addDarkModeBlock:(DarkModeBlock)block {
 	if (block) {
-		block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
+		block(HJTokenManager.shareInstance.supportDarkMode && self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
 		NSMutableArray *blocks = [self darkModeBlocks];
 		[blocks addObject:block];
 		objc_setAssociatedObject(self, darkModeBlocks, blocks, OBJC_ASSOCIATION_RETAIN);
