@@ -53,7 +53,12 @@ static HJLanguageManager *languageManager = nil;
 }
 
 - (NSString *)getTextByKey:(NSString *)key {
-    NSString *defaultLanguage = NSUSER_DEF_mg(@"cx_language");
+    return [self getTextByKey:key lang:NSUSER_DEF_mg(@"cx_language")];
+}
+
+- (NSString *)getTextByKey:(NSString *)key lang:(NSString *)lang {
+    NSString *defaultLanguage = lang;
+    if (isEmptyString_mg(defaultLanguage)) defaultLanguage = NSUSER_DEF_mg(@"cx_language");
     if (isEmptyString_mg(defaultLanguage)) defaultLanguage = @"en";
 
     if (![[self.langDic objectForKey:defaultLanguage] isKindOfClass:[NSDictionary class]]) return @"";

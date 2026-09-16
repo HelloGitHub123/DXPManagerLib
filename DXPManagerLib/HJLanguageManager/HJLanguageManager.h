@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (HJLanguageManager *)shareInstance;
 
 - (NSString *)getTextByKey:(NSString *)key;
+- (NSString *)getTextByKey:(NSString *)key lang:(NSString *)lang;
 
 - (NSString *)getLangNameByLangKey:(NSString *)langKey;
 
