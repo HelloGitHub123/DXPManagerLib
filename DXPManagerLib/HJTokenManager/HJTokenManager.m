@@ -12,9 +12,9 @@
 #import "ManagerHeader.h"
 #import <objc/runtime.h>
 
-#define M_PI 3.14159265358979323846264338327950288  /* pi            */
+#define M_PI        3.14159265358979323846264338327950288  /* pi            */
 
-#define M_PI_2 1.57079632679489661923132169163975144  /* pi/2          */
+#define M_PI_2      1.57079632679489661923132169163975144  /* pi/2          */
 
 static HJTokenManager *tokenManager = nil;
 
@@ -418,7 +418,7 @@ static const char *darkModeBlocks = "\0";
 	[self DarkModeTraitCollectionDidChange:previousTraitCollection];
 	// 因为颜色改变触发
 	if (@available(iOS 13.0, *)) {
-		if (HJTokenManager.shareInstance.supportDarkMode && [self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
+		if ([self.traitCollection hasDifferentColorAppearanceComparedToTraitCollection:previousTraitCollection]) {
 			NSMutableArray *blocks = [self darkModeBlocks];
 			for (DarkModeBlock block in blocks) {
 				block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
@@ -431,7 +431,7 @@ static const char *darkModeBlocks = "\0";
 
 - (void)addDarkModeBlock:(DarkModeBlock)block {
 	if (block) {
-		block(HJTokenManager.shareInstance.supportDarkMode && self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
+		block(self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark);
 		NSMutableArray *blocks = [self darkModeBlocks];
 		[blocks addObject:block];
 		objc_setAssociatedObject(self, darkModeBlocks, blocks, OBJC_ASSOCIATION_RETAIN);
