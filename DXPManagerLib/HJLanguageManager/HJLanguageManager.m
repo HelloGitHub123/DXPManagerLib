@@ -68,6 +68,12 @@ static HJLanguageManager *languageManager = nil;
     return text;
 }
 
+- (NSString *)getCurrentLang {
+    NSString *currentLang = NSUSER_DEF_mg(@"cx_language");
+    if (isEmptyString_mg(currentLang)) currentLang = @"en";
+    return currentLang;
+}
+
 - (void)setLangArray:(NSArray *)langArray {
 	_langArray = langArray;
 }

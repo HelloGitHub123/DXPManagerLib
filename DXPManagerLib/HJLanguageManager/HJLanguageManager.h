@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)getTextByKey:(NSString *)key;
 - (NSString *)getTextByKey:(NSString *)key lang:(NSString *)lang;
 
+- (NSString *)getCurrentLang;
+
 - (NSString *)getLangNameByLangKey:(NSString *)langKey;
 
 - (void)queryLanguageFile:(NSString *)appCode;
